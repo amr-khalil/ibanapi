@@ -14,7 +14,7 @@ import { sleep } from "k6";
  * Sends HTTP POST requests to validate a list of IBANs.
  */
 export default function () {
-  const url = "http://localhost:8080/api/iban/validate";
+  const url = "http://localhost:80/api/iban/validate";
   const headers = { "Content-Type": "application/json" };
 
   const ibans = [
