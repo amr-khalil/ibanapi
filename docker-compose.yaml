@@ -71,11 +71,14 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES=compose_service=ibanapi-a # add custom resource attribute to Span for Grafana Trace to Logs feature
       - OTEL_METRICS_EXPORTER=none # disable metrics exporter
       - MANAGEMENT_METRICS_TAGS_APPLICATION=ibanapi-a # override default value of management.metrics.tags.application in app/src/main/resources/application.properties
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-a:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
     ports:
       - "8080:8080"
     logging: *default-logging
     depends_on:
-      - postgres
+      - postgres-a
       - redis
       - tempo
 
@@ -89,11 +92,14 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES=compose_service=ibanapi-b
       - OTEL_METRICS_EXPORTER=none
       - MANAGEMENT_METRICS_TAGS_APPLICATION=ibanapi-b
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-b:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
     ports:
       - "8081:8080"
     logging: *default-logging
     depends_on:
-      - postgres
+      - postgres-b
       - redis
       - tempo
 
@@ -107,15 +113,18 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES=compose_service=ibanapi-c
       - OTEL_METRICS_EXPORTER=none
       - MANAGEMENT_METRICS_TAGS_APPLICATION=ibanapi-c
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-c:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
     ports:
       - "8082:8080"
     logging: *default-logging
     depends_on:
-      - postgres
+      - postgres-c
       - redis
       - tempo
 
-  postgres:
+  postgres-a:
     image: postgres:16.2
     environment:
       - POSTGRES_USER=postgres
@@ -123,6 +132,26 @@ services:
       - POSTGRES_DB=postgres
     ports:
       - "5432:5432"
+    logging: *default-logging
+
+  postgres-b:
+    image: postgres:16.2
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5433:5432"
+    logging: *default-logging
+
+  postgres-c:
+    image: postgres:16.2
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5434:5432"
     logging: *default-logging
 
   redis:
