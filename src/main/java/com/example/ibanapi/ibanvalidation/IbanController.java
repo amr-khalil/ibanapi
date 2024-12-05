@@ -26,4 +26,9 @@ public class IbanController {
         logger.debug("Returning IBAN validation response: {}", response);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/validate")
+    public ResponseEntity<String> getStatus() {
+        return ResponseEntity.ok("Status OK");
+    }
 }

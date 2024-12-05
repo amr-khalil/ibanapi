@@ -13,47 +13,50 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoHandlerFoundException(NoHandlerFoundException ex, WebRequest request) {
+        logger.error("No handler found for URL: {}", request.getDescription(false));
+        ErrorResponse errorResponse = new ErrorResponse("URL Not Found", "The requested URL was not found on this server.");
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(InvalidIbanEmptyException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidIbanEmptyException(InvalidIbanEmptyException ex,
-            WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleInvalidIbanEmptyException(InvalidIbanEmptyException ex, WebRequest request) {
         logger.warn("Invalid IBAN Empty exception: {}", ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse("Invalid IBAN Empty", ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidIbanLengthException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidIbanLengthException(InvalidIbanLengthException ex,
-            WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleInvalidIbanLengthException(InvalidIbanLengthException ex, WebRequest request) {
         logger.warn("Invalid IBAN length exception: {}", ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse("Invalid IBAN Length", ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidIbanFormatException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidIbanFormatException(InvalidIbanFormatException ex,
-            WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleInvalidIbanFormatException(InvalidIbanFormatException ex, WebRequest request) {
         logger.warn("Invalid IBAN format exception: {}", ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse("Invalid IBAN Format", ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidIbanChecksumException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidIbanChecksumException(InvalidIbanChecksumException ex,
-            WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleInvalidIbanChecksumException(InvalidIbanChecksumException ex, WebRequest request) {
         logger.warn("Invalid IBAN checksum exception: {}", ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse("Invalid IBAN Checksum", ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidCountryCodeException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidCountryCodeException(InvalidCountryCodeException ex,
-            WebRequest request) {
+    public ResponseEntity<ErrorResponse> handleInvalidCountryCodeException(InvalidCountryCodeException ex, WebRequest request) {
         logger.warn("Invalid country code exception: {}", ex.getMessage());
         ErrorResponse errorResponse = new ErrorResponse("Invalid Country Code", ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
