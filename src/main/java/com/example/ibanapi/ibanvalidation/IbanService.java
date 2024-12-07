@@ -1,19 +1,18 @@
 package com.example.ibanapi.ibanvalidation;
 
+import com.example.ibanapi.ibanvalidation.exception.InvalidCountryCodeException;
+import com.example.ibanapi.ibanvalidation.exception.InvalidIbanChecksumException;
 import com.example.ibanapi.ibanvalidation.exception.InvalidIbanEmptyException;
-import com.example.ibanapi.ibanvalidation.exception.InvalidIbanException;
 import com.example.ibanapi.ibanvalidation.exception.InvalidIbanFormatException;
 import com.example.ibanapi.ibanvalidation.exception.InvalidIbanLengthException;
 import com.example.ibanapi.ibanvalidation.model.BankDetails;
+import com.example.ibanapi.ibanvalidation.model.IbanValidationErrorEnum;
 import com.example.ibanapi.ibanvalidation.model.SuccessResponse;
 import com.example.ibanapi.ibanvalidation.repository.BankDetailsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class IbanService {
@@ -37,18 +36,18 @@ public class IbanService {
 
         // Ensure normalized IBAN has minimum length
         if (normalizedIban.isEmpty()) {
-            throw new InvalidIbanEmptyException("IBAN value is empty.");
+            throw new InvalidIbanEmptyException(IbanValidationErrorEnum.INVALID_LENGTH.getMessage());
         }
         if (normalizedIban.length() < 14) {
-            throw new InvalidIbanLengthException("IBAN is too short, it should be at least 14 characters long.");
+            throw new InvalidIbanLengthException(IbanValidationErrorEnum.INVALID_LENGTH.getMessage());
         }
         if (normalizedIban.length() > 34) {
-            throw new InvalidIbanLengthException("IBAN is too long, it should be at most 34 characters long.");
+            throw new InvalidIbanLengthException(IbanValidationErrorEnum.INVALID_LENGTH.getMessage());
         }
 
         // Validate IBAN components
         if (!ibanValidator.isValidIbanFormat(normalizedIban)) {
-            throw new InvalidIbanFormatException("IBAN format is invalid.");
+            throw new InvalidIbanFormatException(IbanValidationErrorEnum.INVALID_FORMAT.getMessage());
         }
         boolean isValidLength = ibanValidator.isValidIbanLength(normalizedIban);
         boolean isValidFormat = ibanValidator.isValidIbanFormat(normalizedIban);
@@ -57,34 +56,30 @@ public class IbanService {
         boolean isValidChecksum = ibanValidator.isValidIbanChecksum(normalizedIban);
         boolean isValid = isValidLength && isValidFormat && isValidCountryCode && isValidChecksum;
 
+        if (!isValidCountryCode) {
+            throw new InvalidCountryCodeException(IbanValidationErrorEnum.INVALID_COUNTRY_CODE.getMessage());
+        }
+        if (!isValidChecksum) {
+            throw new InvalidIbanChecksumException(IbanValidationErrorEnum.INVALID_CHECKSUM.getMessage());
+        }
+
         if (!isValid) {
             logger.warn("Invalid IBAN detected: {}", iban);
         }
 
-        Map<String, String> details = null;
+        BankDetails bankDetails = new BankDetails("Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown",
+                "Unknown", "Unknown");
         if (isValid) {
-            // Ensure normalized IBAN has sufficient length for bank identifier extraction
-            if (normalizedIban.length() >= 12) {
-                String bankIdentifier = normalizedIban.substring(4, 12); // Adjusted indices for bank code
-                logger.debug("Retrieving bank details for bank identifier: {}", bankIdentifier);
+            String bankIdentifier = normalizedIban.substring(0, 8);
+            logger.debug("Retrieving bank details for bank identifier: {}", bankIdentifier);
 
-                BankDetails bankDetails = bankDetailsRepository.findById(bankIdentifier).orElse(null);
+            bankDetails = bankDetailsRepository.findById(bankIdentifier).orElse(new BankDetails("Unknown", "Unknown",
+                    "Unknown", "Unknown", "Unknown", "Unknown", "Unknown", "Unknown"));
 
-                if (bankDetails != null) {
-                    details = new HashMap<>();
-                    details.put("name", bankDetails.getName());
-                    details.put("bic", bankDetails.getBic());
-                    details.put("branch", bankDetails.getBranch());
-                    details.put("address", bankDetails.getAddress());
-                    details.put("city", bankDetails.getCity());
-                    details.put("zip", bankDetails.getZip());
-                    details.put("country", bankDetails.getCountry());
-                    logger.debug("Bank details retrieved: {}", details);
-                } else {
-                    logger.warn("No bank details found for bank identifier: {}", bankIdentifier);
-                }
+            if (!"Unknown".equals(bankDetails.getBankIdentifier())) {
+                logger.debug("Bank details retrieved: {}", bankDetails);
             } else {
-                throw new InvalidIbanException("IBAN is too short for bank details extraction.");
+                logger.warn("No bank details found for bank identifier: {}", bankIdentifier);
             }
         }
 
@@ -95,7 +90,7 @@ public class IbanService {
         response.setValidFormat(isValidFormat);
         response.setValidCountryCode(isValidCountryCode);
         response.setValidChecksum(isValidChecksum);
-        response.setDetails(details);
+        response.setBankDetails(bankDetails);
 
         logger.debug("IBAN validation response created: {}", response);
         return response;

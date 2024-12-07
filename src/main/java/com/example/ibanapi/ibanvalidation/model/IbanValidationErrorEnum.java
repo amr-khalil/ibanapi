@@ -1,6 +1,6 @@
-package com.example.ibanapi.ibanvalidation.util;
+package com.example.ibanapi.ibanvalidation.model;
 
-public enum IbanValidationError {
+public enum IbanValidationErrorEnum {
     INVALID_LENGTH("Invalid IBAN length: The IBAN does not meet the required length criteria."),
     INVALID_FORMAT("Invalid IBAN format: The IBAN contains invalid characters or format."),
     INVALID_COUNTRY_CODE("Invalid country code: The IBAN contains an unsupported country code."),
@@ -8,7 +8,7 @@ public enum IbanValidationError {
 
     private final String message;
 
-    IbanValidationError(String message) {
+    IbanValidationErrorEnum(String message) {
         this.message = message;
     }
 

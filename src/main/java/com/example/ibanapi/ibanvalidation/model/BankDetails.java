@@ -14,21 +14,21 @@ import lombok.NoArgsConstructor;
 public class BankDetails {
     @Id
     @Column(name = "bank_identifier", nullable = false, unique = true)
-    private String bankIdentifier;
+    private String bankIdentifier = "Unknown";
 
     @Column(nullable = false, unique = true)
-    private String name;
+    private String name = "Unknown";
 
     @Column(nullable = false)
-    private String bic;
+    private String bic = "Unknown";
 
-    private String branch;
+    private String branch = "Unknown";
 
-    private String address;
+    private String address = "Unknown";
 
-    private String city;
+    private String city = "Unknown";
 
-    private String zip;
+    private String zip = "Unknown";
 
-    private String country;
+    private String country = "Unknown";
 }

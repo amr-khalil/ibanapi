@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.io.Serializable;
-import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -20,5 +19,5 @@ public class SuccessResponse implements Serializable {
     private boolean validFormat;
     private boolean validCountryCode;
     private boolean validChecksum;
-    private Map<String, String> details;
+    private BankDetails bankDetails;
 }
